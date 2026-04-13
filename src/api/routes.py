@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, Query
-from pydantic import BaseModel
+import logging
+from contextlib import contextmanager
 
-from src.data.fetcher import fetch_ohlcv, fetch_coin_list
+from fastapi import FastAPI, HTTPException, Query
+from pydantic import BaseModel, Field
+
+from src.data.fetcher import fetch_ohlcv, fetch_coin_list, FetchError
 from src.analysis.signals import generate_signals
 from src.analysis.sentiment import analyze_sentiment, build_price_summary
 from src.backtest.engine import run_backtest
@@ -17,40 +20,56 @@ from src.db.queries import (
     QUERY_BACKTEST_HISTORY,
 )
 
+logger = logging.getLogger(__name__)
+
 app = FastAPI(
     title="Crypto Signal AI",
     description="AI-powered crypto trading signal generator with backtesting",
-    version="0.1.0",
+    version="0.2.0",
 )
+
+
+@contextmanager
+def db_session():
+    """Context manager for safe database connections."""
+    conn = get_connection()
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 
 @app.on_event("startup")
 def startup():
-    conn = get_connection()
-    init_schema(conn)
-    conn.close()
+    with db_session() as conn:
+        init_schema(conn)
 
 
 @app.get("/api/signals/{coin_id}")
 async def get_signals(
     coin_id: str = "bitcoin",
-    days: int = Query(default=90, le=365),
+    days: int = Query(default=90, ge=1, le=365),
     with_sentiment: bool = Query(default=False),
 ):
     """Generate trading signals for a given coin."""
-    candles = await fetch_ohlcv(coin_id, days=days)
+    try:
+        candles = await fetch_ohlcv(coin_id, days=days)
+    except FetchError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    if not candles:
+        raise HTTPException(status_code=404, detail=f"No data found for {coin_id}")
 
     sentiment = None
-    if with_sentiment and candles:
+    if with_sentiment:
         closes = [c.close for c in candles]
         summary = build_price_summary(closes, coin_id.upper())
         sentiment = await analyze_sentiment(coin_id, summary)
 
     signals = generate_signals(candles, coin_id.upper(), sentiment)
 
-    conn = get_connection()
-    insert_signals(conn, signals)
-    conn.close()
+    with db_session() as conn:
+        insert_signals(conn, signals)
 
     latest = signals[-5:] if signals else []
     return {
@@ -79,18 +98,24 @@ async def get_signals(
 @app.get("/api/backtest/{coin_id}")
 async def run_backtest_endpoint(
     coin_id: str = "bitcoin",
-    days: int = Query(default=90, le=365),
-    hold_periods: int = Query(default=5, le=30),
-    fee_pct: float = Query(default=0.1),
+    days: int = Query(default=90, ge=1, le=365),
+    hold_periods: int = Query(default=5, ge=1, le=30),
+    fee_pct: float = Query(default=0.1, ge=0.0, le=5.0),
 ):
     """Run backtest on a coin's historical data."""
-    candles = await fetch_ohlcv(coin_id, days=days)
+    try:
+        candles = await fetch_ohlcv(coin_id, days=days)
+    except FetchError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    if not candles:
+        raise HTTPException(status_code=404, detail=f"No data found for {coin_id}")
+
     signals = generate_signals(candles, coin_id.upper())
     result = run_backtest(signals, candles, hold_periods=hold_periods, fee_pct=fee_pct)
 
-    conn = get_connection()
-    run_id = insert_backtest(conn, coin_id, result)
-    conn.close()
+    with db_session() as conn:
+        run_id = insert_backtest(conn, coin_id, result)
 
     return {
         "coin": coin_id,
@@ -116,16 +141,13 @@ async def run_backtest_endpoint(
 @app.get("/api/analytics/{coin_id}")
 async def get_analytics(
     coin_id: str = "bitcoin",
-    limit: int = Query(default=20, le=100),
+    limit: int = Query(default=20, ge=1, le=100),
 ):
     """Get stored signal analytics and backtest history."""
-    conn = get_connection()
-
-    distribution = conn.execute(QUERY_SIGNAL_DISTRIBUTION, (coin_id.upper(),)).fetchall()
-    recent = conn.execute(QUERY_RECENT_SIGNALS, (coin_id.upper(), limit)).fetchall()
-    history = conn.execute(QUERY_BACKTEST_HISTORY, (coin_id.upper(), 10)).fetchall()
-
-    conn.close()
+    with db_session() as conn:
+        distribution = conn.execute(QUERY_SIGNAL_DISTRIBUTION, (coin_id.upper(),)).fetchall()
+        recent = conn.execute(QUERY_RECENT_SIGNALS, (coin_id.upper(), limit)).fetchall()
+        history = conn.execute(QUERY_BACKTEST_HISTORY, (coin_id.upper(), 10)).fetchall()
 
     return {
         "coin": coin_id,
@@ -136,9 +158,13 @@ async def get_analytics(
 
 
 @app.get("/api/coins")
-async def list_coins(limit: int = Query(default=20, le=50)):
+async def list_coins(limit: int = Query(default=20, ge=1, le=50)):
     """List top coins by market cap."""
-    coins = await fetch_coin_list(limit=limit)
+    try:
+        coins = await fetch_coin_list(limit=limit)
+    except FetchError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
     return {
         "count": len(coins),
         "coins": [
@@ -159,14 +185,16 @@ async def list_coins(limit: int = Query(default=20, le=50)):
 
 
 class WebhookAlertRequest(BaseModel):
-    coins: list[str] = ["bitcoin", "ethereum"]
+    coins: list[str] = Field(default=["bitcoin", "ethereum"], min_length=1)
     with_backtest: bool = True
 
 
 class ProvisionRequest(BaseModel):
-    team_name: str
-    use_case: str
-    coins: list[str] = ["bitcoin"]
+    team_name: str = Field(min_length=1, max_length=100)
+    use_case: str = Field(min_length=1)
+    coins: list[str] = Field(default=["bitcoin"], min_length=1)
+    slack_channel: str = Field(default="#crypto-alerts")
+    admin_email: str = Field(default="admin@example.com")
 
 
 @app.post("/api/webhook/alert")
@@ -192,6 +220,8 @@ async def webhook_provision(req: ProvisionRequest):
         "team_name": req.team_name,
         "use_case": req.use_case,
         "coins": req.coins,
+        "slack_channel": req.slack_channel,
+        "admin_email": req.admin_email,
         "api_key_masked": f"{api_key[:8]}...{api_key[-4:]}",
         "dashboard_url": f"/dashboard/{req.team_name.lower().replace(' ', '-')}",
         "provisioned_at": datetime.now(timezone.utc).isoformat(),

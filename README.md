@@ -40,7 +40,7 @@ CoinGecko API에서 실시간 가격 데이터를 수집하고, 기술적 분석
 - **Slack Integration**: Strong Buy/Sell 시그널 발생 시 자동 Slack 알림
 - **Scheduler**: 6시간 간격 자동 모니터링, 독립 실행 가능
 - **SQL Analytics**: 시그널 분포, 최근 시그널, 백테스트 이력, 최고 성과 트레이드 조회
-- **35 Tests**: 기술적 분석, 시그널 생성, 백테스트 엔진 전체 테스트 커버리지
+- **46 Tests**: 기술적 분석, 시그널 생성, 백테스트 엔진, DB 레이어, 감성 분석 전체 테스트 커버리지
 
 ## Quick Start
 
@@ -102,4 +102,21 @@ n8n에서 Import Workflow → JSON 파일 선택 → API URL만 수정하면 즉
 
 ## Tech Stack
 
-Python · FastAPI · NumPy · Pandas · OpenAI API · SQLite · httpx · n8n · Slack Webhooks · pytest
+Python · FastAPI · NumPy · Pandas · OpenAI API · SQLite · httpx · n8n · Slack Webhooks · Pydantic · pytest
+
+## Configuration
+
+All parameters are configurable via environment variables or `src/config.py`:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LLM_MODEL` | gpt-4o-mini | OpenAI model for sentiment analysis |
+| `RSI_PERIOD` | 14 | RSI indicator period |
+| `MACD_FAST/SLOW/SIGNAL` | 12/26/9 | MACD parameters |
+| `BB_PERIOD` / `BB_STD` | 20 / 2.0 | Bollinger Bands parameters |
+| `DEFAULT_COINS` | bitcoin,ethereum | Monitored coins (comma-separated) |
+| `CHECK_INTERVAL` | 21600 | Scheduler interval in seconds (6h) |
+| `DB_PATH` | data/signals.db | SQLite database path |
+| `OPENAI_API_KEY` | - | Required for sentiment analysis |
+| `SLACK_WEBHOOK_URL` | - | Slack incoming webhook URL |
+| `N8N_WEBHOOK_URL` | - | n8n webhook trigger URL |

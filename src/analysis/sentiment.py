@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 
 from openai import AsyncOpenAI
 
+from src.config import LLM_MODEL, LLM_TEMPERATURE
 from src.data.models import SentimentResult
+
+logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a crypto market sentiment analyst.
 Given a coin name and recent price action summary, produce a JSON object:
@@ -23,31 +27,50 @@ async def analyze_sentiment(
 ) -> SentimentResult:
     """Use LLM to analyze market sentiment from price action context."""
     if client is None:
-        client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY", ""))
+        api_key = os.environ.get("OPENAI_API_KEY", "")
+        if not api_key:
+            logger.warning("OPENAI_API_KEY not set, returning neutral sentiment")
+            return SentimentResult(score=0.0, summary="API key not configured", sources=[])
+        client = AsyncOpenAI(api_key=api_key)
 
     user_prompt = f"Coin: {coin}\nRecent price action:\n{price_summary}"
 
-    resp = await client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=0.3,
-        max_tokens=200,
-    )
+    try:
+        resp = await client.chat.completions.create(
+            model=LLM_MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=LLM_TEMPERATURE,
+            max_tokens=200,
+        )
 
-    text = resp.choices[0].message.content or "{}"
-    text = text.strip().removeprefix("```json").removesuffix("```").strip()
+        if not resp.choices:
+            logger.warning("LLM returned empty choices")
+            return SentimentResult(score=0.0, summary="LLM returned no response", sources=[])
 
-    parsed = json.loads(text)
-    score = max(-1.0, min(1.0, float(parsed.get("score", 0.0))))
+        text = resp.choices[0].message.content or "{}"
+        text = text.strip().removeprefix("```json").removesuffix("```").strip()
 
-    return SentimentResult(
-        score=score,
-        summary=parsed.get("summary", ""),
-        sources=["llm-price-action-analysis"],
-    )
+        parsed = json.loads(text)
+        score = max(-1.0, min(1.0, float(parsed.get("score", 0.0))))
+
+        return SentimentResult(
+            score=score,
+            summary=parsed.get("summary", ""),
+            sources=["llm-price-action-analysis"],
+        )
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse LLM response as JSON: {e}")
+        return SentimentResult(score=0.0, summary="LLM response parse error", sources=[])
+    except (ValueError, TypeError) as e:
+        logger.error(f"Invalid score value from LLM: {e}")
+        return SentimentResult(score=0.0, summary="Invalid LLM output", sources=[])
+    except Exception as e:
+        logger.error(f"Sentiment analysis failed: {e}")
+        return SentimentResult(score=0.0, summary=f"Analysis error: {type(e).__name__}", sources=[])
 
 
 def build_price_summary(closes: list[float], coin: str = "BTC") -> str:

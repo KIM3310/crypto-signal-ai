@@ -32,7 +32,7 @@
       "parameters": {
         "resource": "chatMessage",
         "text": "=✅ *{{ $json.team_name }}* 팀 AI 환경 프로비저닝 완료\n\n모니터링 코인: {{ $json.coins }}\n대시보드: {{ $json.dashboard_url }}\nAPI Key: {{ $json.api_key_masked }}",
-        "channelId": "={{ $json.slack_channel }}"
+        "channelId": "={{ $json.body.slack_channel || '#crypto-alerts' }}"
       },
       "name": "Notify Team on Slack",
       "type": "n8n-nodes-base.slack",
@@ -41,7 +41,7 @@
     },
     {
       "parameters": {
-        "toEmail": "={{ $json.admin_email }}",
+        "toEmail": "={{ $json.body.admin_email || $json.admin_email }}",
         "subject": "AI 도구 프로비저닝 완료 - {{ $json.team_name }}",
         "text": "={{ $json.team_name }} 팀의 AI 워크스페이스가 생성되었습니다."
       },

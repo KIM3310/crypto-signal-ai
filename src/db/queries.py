@@ -10,9 +10,8 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
+from src.config import DB_PATH
 from src.data.models import BacktestResult, TradeSignal
-
-DB_PATH = Path("data/signals.db")
 
 
 def get_connection(db_path: Path = DB_PATH) -> sqlite3.Connection:
@@ -33,6 +32,11 @@ def init_schema(conn: sqlite3.Connection) -> None:
             price REAL NOT NULL,
             rsi REAL,
             macd REAL,
+            macd_signal REAL,
+            macd_histogram REAL,
+            bb_upper REAL,
+            bb_middle REAL,
+            bb_lower REAL,
             bb_percent REAL,
             sentiment_score REAL,
             reasoning TEXT,
@@ -78,6 +82,11 @@ def insert_signals(conn: sqlite3.Connection, signals: list[TradeSignal]) -> int:
             s.price,
             s.technical.rsi,
             s.technical.macd,
+            s.technical.macd_signal,
+            s.technical.macd_histogram,
+            s.technical.bb_upper,
+            s.technical.bb_middle,
+            s.technical.bb_lower,
             s.technical.bb_percent,
             s.sentiment.score if s.sentiment else None,
             s.reasoning,
@@ -86,8 +95,9 @@ def insert_signals(conn: sqlite3.Connection, signals: list[TradeSignal]) -> int:
     ]
     conn.executemany(
         """INSERT INTO signals
-           (timestamp, coin, signal, confidence, price, rsi, macd, bb_percent, sentiment_score, reasoning)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           (timestamp, coin, signal, confidence, price, rsi, macd, macd_signal,
+            macd_histogram, bb_upper, bb_middle, bb_lower, bb_percent, sentiment_score, reasoning)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         rows,
     )
     conn.commit()

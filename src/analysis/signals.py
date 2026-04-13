@@ -59,9 +59,10 @@ def classify_signal(tech: TechnicalResult, sentiment: SentimentResult | None) ->
         elif sentiment.score < -0.3:
             reasons.append(f"부정 감성({sentiment.score:.2f})")
 
-    # Classify
-    max_score = 9.5  # theoretical max
-    confidence = min(1.0, abs(score) / (max_score * 0.5))
+    # Classify — scale score to 0..1 confidence, minimum 0.1 for non-zero scores
+    max_score = 7.5
+    raw_conf = abs(score) / max_score if max_score > 0 else 0.0
+    confidence = max(0.1, min(1.0, raw_conf)) if abs(score) > 0.1 else 0.0
 
     if score >= 4.0:
         signal = Signal.STRONG_BUY

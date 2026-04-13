@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from src.config import ANNUALIZE_FACTOR, MIN_SIGNAL_CONFIDENCE
 from src.data.models import BacktestResult, BacktestTrade, OHLCV, Signal, TradeSignal
 
 
@@ -66,7 +67,7 @@ def run_backtest(
 
         # Check entry conditions
         if position_entry is None and sig:
-            if sig.signal in (Signal.BUY, Signal.STRONG_BUY) and sig.confidence >= 0.3:
+            if sig.signal in (Signal.BUY, Signal.STRONG_BUY) and sig.confidence >= MIN_SIGNAL_CONFIDENCE:
                 position_entry = i
                 entry_price = candles[i].close
 
@@ -127,9 +128,8 @@ def compute_sharpe(equity_curve: list[float], risk_free_rate: float = 0.0) -> fl
     if std_dev == 0:
         return 0.0
 
-    # Annualize assuming daily returns
-    annualized_return = avg_return * 365
-    annualized_std = std_dev * math.sqrt(365)
+    annualized_return = avg_return * ANNUALIZE_FACTOR
+    annualized_std = std_dev * math.sqrt(ANNUALIZE_FACTOR)
 
     return (annualized_return - risk_free_rate) / annualized_std
 
