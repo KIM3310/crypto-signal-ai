@@ -18,6 +18,15 @@ MACD_SIGNAL: int = int(os.environ.get("MACD_SIGNAL", "9"))
 BB_PERIOD: int = int(os.environ.get("BB_PERIOD", "20"))
 BB_STD: float = float(os.environ.get("BB_STD", "2.0"))
 
+# --- Signal Classification ---
+SIGNAL_MAX_SCORE: float = float(os.environ.get("SIGNAL_MAX_SCORE", "7.5"))
+STRONG_BUY_THRESHOLD: float = float(os.environ.get("STRONG_BUY_THRESHOLD", "4.0"))
+BUY_THRESHOLD: float = float(os.environ.get("BUY_THRESHOLD", "1.5"))
+STRONG_SELL_THRESHOLD: float = float(os.environ.get("STRONG_SELL_THRESHOLD", "-4.0"))
+SELL_THRESHOLD: float = float(os.environ.get("SELL_THRESHOLD", "-1.5"))
+SENTIMENT_POSITIVE_THRESHOLD: float = 0.3
+SENTIMENT_NEGATIVE_THRESHOLD: float = -0.3
+
 # --- Backtest ---
 DEFAULT_INITIAL_CAPITAL: float = 10_000.0
 DEFAULT_FEE_PCT: float = 0.1

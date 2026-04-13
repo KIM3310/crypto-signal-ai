@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from src.config import (
+    SIGNAL_MAX_SCORE, STRONG_BUY_THRESHOLD, BUY_THRESHOLD,
+    STRONG_SELL_THRESHOLD, SELL_THRESHOLD,
+    SENTIMENT_POSITIVE_THRESHOLD, SENTIMENT_NEGATIVE_THRESHOLD,
+)
 from src.data.models import OHLCV, SentimentResult, Signal, TechnicalResult, TradeSignal
 from src.analysis.technical import analyze
 
@@ -54,23 +59,22 @@ def classify_signal(tech: TechnicalResult, sentiment: SentimentResult | None) ->
     # Sentiment
     if sentiment is not None:
         score += sentiment.score * 2.0
-        if sentiment.score > 0.3:
+        if sentiment.score > SENTIMENT_POSITIVE_THRESHOLD:
             reasons.append(f"긍정 감성({sentiment.score:.2f})")
-        elif sentiment.score < -0.3:
+        elif sentiment.score < SENTIMENT_NEGATIVE_THRESHOLD:
             reasons.append(f"부정 감성({sentiment.score:.2f})")
 
     # Classify — scale score to 0..1 confidence, minimum 0.1 for non-zero scores
-    max_score = 7.5
-    raw_conf = abs(score) / max_score if max_score > 0 else 0.0
+    raw_conf = abs(score) / SIGNAL_MAX_SCORE if SIGNAL_MAX_SCORE > 0 else 0.0
     confidence = max(0.1, min(1.0, raw_conf)) if abs(score) > 0.1 else 0.0
 
-    if score >= 4.0:
+    if score >= STRONG_BUY_THRESHOLD:
         signal = Signal.STRONG_BUY
-    elif score >= 1.5:
+    elif score >= BUY_THRESHOLD:
         signal = Signal.BUY
-    elif score <= -4.0:
+    elif score <= STRONG_SELL_THRESHOLD:
         signal = Signal.STRONG_SELL
-    elif score <= -1.5:
+    elif score <= SELL_THRESHOLD:
         signal = Signal.SELL
     else:
         signal = Signal.NEUTRAL

@@ -16,11 +16,19 @@ def run_backtest(
     """Run a simple backtest on generated signals.
 
     Strategy: enter on BUY/STRONG_BUY, exit after hold_periods candles or on SELL signal.
+    Equity curve has exactly len(candles)+1 entries: [initial, after_candle_0, ..., after_candle_N].
     """
+    if not candles:
+        return BacktestResult(
+            total_return_pct=0.0, sharpe_ratio=0.0, max_drawdown_pct=0.0,
+            win_rate=0.0, total_trades=0, trades=[], equity_curve=[initial_capital],
+        )
+
     capital = initial_capital
-    equity_curve = [capital]
+    equity_curve: list[float] = [capital]
     trades: list[BacktestTrade] = []
 
+    # Build signal lookup by candle index
     signal_map: dict[int, TradeSignal] = {}
     candle_idx_map: dict[str, int] = {}
     for i, candle in enumerate(candles):
@@ -48,8 +56,8 @@ def run_backtest(
 
             if should_exit:
                 exit_price = candles[i].close
-                gross_pnl_pct = (exit_price / entry_price - 1) * 100
-                net_pnl_pct = gross_pnl_pct - fee_pct * 2  # entry + exit fee
+                gross_pnl_pct = (exit_price / entry_price - 1) * 100 if entry_price > 0 else 0.0
+                net_pnl_pct = gross_pnl_pct - fee_pct * 2
                 capital *= 1 + net_pnl_pct / 100
 
                 trades.append(
@@ -73,11 +81,13 @@ def run_backtest(
 
         equity_curve.append(capital)
 
-    # Close open position at last candle
-    if position_entry is not None and len(candles) > 0:
+    # Force-close open position at last candle
+    if position_entry is not None:
         exit_price = candles[-1].close
-        gross_pnl_pct = (exit_price / entry_price - 1) * 100
+        gross_pnl_pct = (exit_price / entry_price - 1) * 100 if entry_price > 0 else 0.0
         net_pnl_pct = gross_pnl_pct - fee_pct * 2
+        capital *= 1 + net_pnl_pct / 100
+        equity_curve[-1] = capital  # update last entry instead of appending
 
         trades.append(
             BacktestTrade(
@@ -90,8 +100,6 @@ def run_backtest(
                 signal=signal_map[position_entry].signal,
             )
         )
-        capital *= 1 + net_pnl_pct / 100
-        equity_curve.append(capital)
 
     total_return = (capital / initial_capital - 1) * 100
     win_trades = [t for t in trades if t.pnl_pct > 0]
@@ -113,16 +121,20 @@ def compute_sharpe(equity_curve: list[float], risk_free_rate: float = 0.0) -> fl
     if len(equity_curve) < 2:
         return 0.0
 
-    returns = []
+    returns: list[float] = []
     for i in range(1, len(equity_curve)):
-        if equity_curve[i - 1] > 0:
-            returns.append(equity_curve[i] / equity_curve[i - 1] - 1)
+        prev = equity_curve[i - 1]
+        if prev > 0 and math.isfinite(prev):
+            r = equity_curve[i] / prev - 1
+            if math.isfinite(r):
+                returns.append(r)
 
     if not returns:
         return 0.0
 
-    avg_return = sum(returns) / len(returns)
-    variance = sum((r - avg_return) ** 2 for r in returns) / len(returns)
+    n = len(returns)
+    avg_return = sum(returns) / n
+    variance = sum((r - avg_return) ** 2 for r in returns) / n
     std_dev = math.sqrt(variance) if variance > 0 else 0.0
 
     if std_dev == 0:
@@ -143,6 +155,8 @@ def compute_max_drawdown(equity_curve: list[float]) -> float:
     max_dd = 0.0
 
     for value in equity_curve:
+        if not math.isfinite(value):
+            continue
         if value > peak:
             peak = value
         dd = (peak - value) / peak * 100 if peak > 0 else 0.0

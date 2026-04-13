@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -22,10 +22,19 @@ from src.db.queries import (
 
 logger = logging.getLogger(__name__)
 
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    """Initialize DB on startup."""
+    with db_session() as conn:
+        init_schema(conn)
+    yield
+
+
 app = FastAPI(
     title="Crypto Signal AI",
     description="AI-powered crypto trading signal generator with backtesting",
-    version="0.2.0",
+    version="0.3.0",
+    lifespan=lifespan,
 )
 
 
@@ -37,12 +46,6 @@ def db_session():
         yield conn
     finally:
         conn.close()
-
-
-@app.on_event("startup")
-def startup():
-    with db_session() as conn:
-        init_schema(conn)
 
 
 @app.get("/api/signals/{coin_id}")

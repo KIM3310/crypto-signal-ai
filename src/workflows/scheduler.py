@@ -14,16 +14,14 @@ from datetime import datetime, timezone
 
 import httpx
 
-from src.data.fetcher import fetch_ohlcv
+from src.config import DEFAULT_COINS, CHECK_INTERVAL_SECONDS
+from src.data.fetcher import fetch_ohlcv, FetchError
 from src.analysis.signals import generate_signals
 from src.analysis.sentiment import analyze_sentiment, build_price_summary
 from src.backtest.engine import run_backtest
 from src.db.queries import get_connection, init_schema, insert_signals, insert_backtest
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_COINS = ["bitcoin", "ethereum"]
-CHECK_INTERVAL_SECONDS = 6 * 60 * 60  # 6 hours
 
 
 async def notify_slack(webhook_url: str, message: str) -> None:
@@ -40,8 +38,8 @@ async def notify_webhook(url: str, payload: dict) -> None:
 
 def format_signal_alert(coin: str, signal_data: dict, backtest_data: dict | None) -> str:
     """Format signal data into a Korean alert message for Non-Tech users."""
-    latest = signal_data.get("latest", [{}])[-1] if signal_data.get("latest") else {}
-    sentiment = signal_data.get("sentiment", {})
+    latest = (signal_data.get("latest") or [{}])[-1]
+    sentiment = signal_data.get("sentiment") or {}
 
     lines = [
         f"📊 *{coin.upper()} 시그널 리포트*",

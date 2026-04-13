@@ -40,7 +40,7 @@ CoinGecko API에서 실시간 가격 데이터를 수집하고, 기술적 분석
 - **Slack Integration**: Strong Buy/Sell 시그널 발생 시 자동 Slack 알림
 - **Scheduler**: 6시간 간격 자동 모니터링, 독립 실행 가능
 - **SQL Analytics**: 시그널 분포, 최근 시그널, 백테스트 이력, 최고 성과 트레이드 조회
-- **46 Tests**: 기술적 분석, 시그널 생성, 백테스트 엔진, DB 레이어, 감성 분석 전체 테스트 커버리지
+- **61 Tests**: 기술적 분석, 시그널 생성, 백테스트 엔진, DB 레이어, 감성 분석, API 검증, 스케줄러 전체 테스트 커버리지
 
 ## Quick Start
 
@@ -49,7 +49,8 @@ git clone https://github.com/KIM3310/crypto-signal-ai.git
 cd crypto-signal-ai
 pip install -r requirements.txt
 
-# Run API server
+# Run API server (sentiment analysis requires OPENAI_API_KEY)
+export OPENAI_API_KEY=your-key-here  # optional, for AI sentiment
 uvicorn src.api.routes:app --reload
 
 # Run standalone scheduler (no n8n required)
