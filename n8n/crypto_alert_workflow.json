@@ -1,0 +1,113 @@
+{
+  "name": "Crypto Signal AI - Daily Alert Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 6 }]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [250, 300],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/signals/bitcoin?days=90&with_sentiment=true",
+        "options": {}
+      },
+      "name": "Fetch BTC Signals",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [470, 200],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/signals/ethereum?days=90&with_sentiment=true",
+        "options": {}
+      },
+      "name": "Fetch ETH Signals",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [470, 400],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.latest[0].signal }}",
+              "operation": "contains",
+              "value2": "buy"
+            }
+          ]
+        }
+      },
+      "name": "Filter Buy Signals",
+      "type": "n8n-nodes-base.if",
+      "position": [690, 200],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "channel": "#crypto-alerts",
+        "text": "=🚨 *{{ $json.coin }} 매수 시그널 감지*\n\n신뢰도: {{ $json.latest[0].confidence }}\n가격: ${{ $json.latest[0].price }}\nRSI: {{ $json.latest[0].rsi }}\n근거: {{ $json.latest[0].reasoning }}\n\n감성분석: {{ $json.sentiment.summary }}",
+        "otherOptions": {}
+      },
+      "name": "Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "position": [910, 200],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/backtest/{{ $json.coin }}?days=90",
+        "options": {}
+      },
+      "name": "Run Backtest",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [910, 400],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": { "__rl": true, "value": "SPREADSHEET_ID", "mode": "id" },
+        "sheetName": "Signal Log",
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        }
+      },
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [1130, 300],
+      "typeVersion": 4.5
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          { "node": "Fetch BTC Signals", "type": "main", "index": 0 },
+          { "node": "Fetch ETH Signals", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch BTC Signals": {
+      "main": [[ { "node": "Filter Buy Signals", "type": "main", "index": 0 } ]]
+    },
+    "Filter Buy Signals": {
+      "main": [
+        [ { "node": "Slack Alert", "type": "main", "index": 0 } ],
+        [ { "node": "Run Backtest", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Slack Alert": {
+      "main": [[ { "node": "Log to Google Sheets", "type": "main", "index": 0 } ]]
+    },
+    "Run Backtest": {
+      "main": [[ { "node": "Log to Google Sheets", "type": "main", "index": 0 } ]]
+    }
+  }
+}

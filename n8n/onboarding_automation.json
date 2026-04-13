@@ -1,0 +1,67 @@
+{
+  "name": "Non-Tech Team Onboarding - AI Tool Setup Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "onboard-team",
+        "options": {}
+      },
+      "name": "Webhook - New Team Request",
+      "type": "n8n-nodes-base.webhook",
+      "position": [250, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/webhook/provision",
+        "method": "POST",
+        "body": {
+          "team_name": "={{ $json.body.team_name }}",
+          "use_case": "={{ $json.body.use_case }}",
+          "coins": "={{ $json.body.coins }}"
+        },
+        "options": {}
+      },
+      "name": "Provision AI Workspace",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [470, 300],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "text": "=✅ *{{ $json.team_name }}* 팀 AI 환경 프로비저닝 완료\n\n모니터링 코인: {{ $json.coins }}\n대시보드: {{ $json.dashboard_url }}\nAPI Key: {{ $json.api_key_masked }}",
+        "channelId": "={{ $json.slack_channel }}"
+      },
+      "name": "Notify Team on Slack",
+      "type": "n8n-nodes-base.slack",
+      "position": [690, 200],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.admin_email }}",
+        "subject": "AI 도구 프로비저닝 완료 - {{ $json.team_name }}",
+        "text": "={{ $json.team_name }} 팀의 AI 워크스페이스가 생성되었습니다."
+      },
+      "name": "Email Admin",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [690, 400],
+      "typeVersion": 2.1
+    }
+  ],
+  "connections": {
+    "Webhook - New Team Request": {
+      "main": [[ { "node": "Provision AI Workspace", "type": "main", "index": 0 } ]]
+    },
+    "Provision AI Workspace": {
+      "main": [
+        [
+          { "node": "Notify Team on Slack", "type": "main", "index": 0 },
+          { "node": "Email Admin", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  }
+}
