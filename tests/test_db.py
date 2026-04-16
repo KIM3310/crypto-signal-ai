@@ -6,7 +6,12 @@ from pathlib import Path
 
 from src.db.queries import get_connection, init_schema, insert_signals, insert_backtest
 from src.data.models import (
-    BacktestResult, BacktestTrade, Signal, TechnicalResult, TradeSignal, SentimentResult,
+    BacktestResult,
+    BacktestTrade,
+    Signal,
+    TechnicalResult,
+    TradeSignal,
+    SentimentResult,
 )
 
 
@@ -24,8 +29,14 @@ def _signal(price: float = 100.0) -> TradeSignal:
         confidence=0.8,
         price=price,
         technical=TechnicalResult(
-            rsi=35.0, macd=0.5, macd_signal=0.3, macd_histogram=0.2,
-            bb_upper=110.0, bb_middle=100.0, bb_lower=90.0, bb_percent=0.3,
+            rsi=35.0,
+            macd=0.5,
+            macd_signal=0.3,
+            macd_histogram=0.2,
+            bb_upper=110.0,
+            bb_middle=100.0,
+            bb_lower=90.0,
+            bb_percent=0.3,
         ),
         sentiment=SentimentResult(score=0.6, summary="bullish"),
         reasoning="RSI oversold",
@@ -66,14 +77,14 @@ class TestInsertSignals:
         row = conn.execute("SELECT * FROM signals WHERE id=1").fetchone()
         # Column indices: rsi=6, macd=7, macd_signal=8, macd_histogram=9,
         # bb_upper=10, bb_middle=11, bb_lower=12, bb_percent=13
-        assert row[6] == 35.0   # rsi
-        assert row[7] == 0.5    # macd
-        assert row[8] == 0.3    # macd_signal
-        assert row[9] == 0.2    # macd_histogram
+        assert row[6] == 35.0  # rsi
+        assert row[7] == 0.5  # macd
+        assert row[8] == 0.3  # macd_signal
+        assert row[9] == 0.2  # macd_histogram
         assert row[10] == 110.0  # bb_upper
         assert row[11] == 100.0  # bb_middle
-        assert row[12] == 90.0   # bb_lower
-        assert row[13] == 0.3    # bb_percent
+        assert row[12] == 90.0  # bb_lower
+        assert row[13] == 0.3  # bb_percent
         conn.close()
 
     def test_sentiment_score_stored(self, tmp_path):
@@ -97,8 +108,11 @@ class TestInsertBacktest:
                 BacktestTrade(
                     entry_time=datetime(2024, 1, 1, tzinfo=timezone.utc),
                     exit_time=datetime(2024, 1, 5, tzinfo=timezone.utc),
-                    entry_price=100.0, exit_price=105.0,
-                    side="long", pnl_pct=4.8, signal=Signal.BUY,
+                    entry_price=100.0,
+                    exit_price=105.0,
+                    side="long",
+                    pnl_pct=4.8,
+                    signal=Signal.BUY,
                 )
             ],
             equity_curve=[10000, 10500],

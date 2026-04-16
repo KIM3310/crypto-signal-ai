@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from src.config import RSI_PERIOD, MACD_FAST, MACD_SLOW, MACD_SIGNAL, BB_PERIOD, BB_STD
 from src.data.models import OHLCV, TechnicalResult
 
 
@@ -40,9 +39,9 @@ def compute_macd(
     signal_period: int = 9,
 ) -> list[tuple[float | None, float | None, float | None]]:
     """MACD, Signal, Histogram."""
-    results: list[tuple[float | None, float | None, float | None]] = [
-        (None, None, None)
-    ] * len(closes)
+    results: list[tuple[float | None, float | None, float | None]] = [(None, None, None)] * len(
+        closes
+    )
     if len(closes) < slow:
         return results
 

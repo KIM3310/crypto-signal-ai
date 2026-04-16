@@ -2,7 +2,10 @@ from datetime import datetime, timezone
 
 from src.backtest.engine import run_backtest, compute_sharpe, compute_max_drawdown
 from src.data.models import (
-    OHLCV, Signal, TechnicalResult, TradeSignal,
+    OHLCV,
+    Signal,
+    TechnicalResult,
+    TradeSignal,
 )
 
 
@@ -13,8 +16,11 @@ def _ts(day: int) -> datetime:
 def _candle(day: int, price: float) -> OHLCV:
     return OHLCV(
         timestamp=_ts(day),
-        open=price, high=price * 1.01, low=price * 0.99,
-        close=price, volume=1000.0,
+        open=price,
+        high=price * 1.01,
+        low=price * 0.99,
+        close=price,
+        volume=1000.0,
     )
 
 

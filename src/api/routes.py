@@ -22,6 +22,7 @@ from src.db.queries import (
 
 logger = logging.getLogger(__name__)
 
+
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     """Initialize DB on startup."""

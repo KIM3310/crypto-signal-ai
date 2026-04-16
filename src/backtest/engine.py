@@ -20,8 +20,13 @@ def run_backtest(
     """
     if not candles:
         return BacktestResult(
-            total_return_pct=0.0, sharpe_ratio=0.0, max_drawdown_pct=0.0,
-            win_rate=0.0, total_trades=0, trades=[], equity_curve=[initial_capital],
+            total_return_pct=0.0,
+            sharpe_ratio=0.0,
+            max_drawdown_pct=0.0,
+            win_rate=0.0,
+            total_trades=0,
+            trades=[],
+            equity_curve=[initial_capital],
         )
 
     capital = initial_capital
@@ -75,7 +80,10 @@ def run_backtest(
 
         # Check entry conditions
         if position_entry is None and sig:
-            if sig.signal in (Signal.BUY, Signal.STRONG_BUY) and sig.confidence >= MIN_SIGNAL_CONFIDENCE:
+            if (
+                sig.signal in (Signal.BUY, Signal.STRONG_BUY)
+                and sig.confidence >= MIN_SIGNAL_CONFIDENCE
+            ):
                 position_entry = i
                 entry_price = candles[i].close
 

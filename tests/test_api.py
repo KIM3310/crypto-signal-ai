@@ -10,11 +10,14 @@ client = TestClient(app)
 
 class TestProvisionEndpoint:
     def test_provision_basic(self):
-        resp = client.post("/api/webhook/provision", json={
-            "team_name": "Trading Desk",
-            "use_case": "BTC monitoring",
-            "coins": ["bitcoin"],
-        })
+        resp = client.post(
+            "/api/webhook/provision",
+            json={
+                "team_name": "Trading Desk",
+                "use_case": "BTC monitoring",
+                "coins": ["bitcoin"],
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["team_name"] == "Trading Desk"
@@ -24,21 +27,27 @@ class TestProvisionEndpoint:
         assert data["slack_channel"] == "#crypto-alerts"
 
     def test_provision_custom_slack(self):
-        resp = client.post("/api/webhook/provision", json={
-            "team_name": "Risk Team",
-            "use_case": "Risk alerts",
-            "slack_channel": "#risk-alerts",
-            "admin_email": "risk@company.com",
-        })
+        resp = client.post(
+            "/api/webhook/provision",
+            json={
+                "team_name": "Risk Team",
+                "use_case": "Risk alerts",
+                "slack_channel": "#risk-alerts",
+                "admin_email": "risk@company.com",
+            },
+        )
         data = resp.json()
         assert data["slack_channel"] == "#risk-alerts"
         assert data["admin_email"] == "risk@company.com"
 
     def test_provision_empty_team_name_rejected(self):
-        resp = client.post("/api/webhook/provision", json={
-            "team_name": "",
-            "use_case": "test",
-        })
+        resp = client.post(
+            "/api/webhook/provision",
+            json={
+                "team_name": "",
+                "use_case": "test",
+            },
+        )
         assert resp.status_code == 422  # validation error
 
 

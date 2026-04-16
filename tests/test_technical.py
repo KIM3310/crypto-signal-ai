@@ -6,11 +6,16 @@ from src.data.models import OHLCV
 
 def _make_candles(closes: list[float]) -> list[OHLCV]:
     from datetime import timedelta
+
     base = datetime(2024, 1, 1, tzinfo=timezone.utc)
     return [
         OHLCV(
             timestamp=base + timedelta(days=i),
-            open=c, high=c * 1.01, low=c * 0.99, close=c, volume=1000.0,
+            open=c,
+            high=c * 1.01,
+            low=c * 0.99,
+            close=c,
+            volume=1000.0,
         )
         for i, c in enumerate(closes)
     ]

@@ -1,17 +1,22 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 
 from src.config import (
-    SIGNAL_MAX_SCORE, STRONG_BUY_THRESHOLD, BUY_THRESHOLD,
-    STRONG_SELL_THRESHOLD, SELL_THRESHOLD,
-    SENTIMENT_POSITIVE_THRESHOLD, SENTIMENT_NEGATIVE_THRESHOLD,
+    SIGNAL_MAX_SCORE,
+    STRONG_BUY_THRESHOLD,
+    BUY_THRESHOLD,
+    STRONG_SELL_THRESHOLD,
+    SELL_THRESHOLD,
+    SENTIMENT_POSITIVE_THRESHOLD,
+    SENTIMENT_NEGATIVE_THRESHOLD,
 )
 from src.data.models import OHLCV, SentimentResult, Signal, TechnicalResult, TradeSignal
 from src.analysis.technical import analyze
 
 
-def classify_signal(tech: TechnicalResult, sentiment: SentimentResult | None) -> tuple[Signal, float, str]:
+def classify_signal(
+    tech: TechnicalResult, sentiment: SentimentResult | None
+) -> tuple[Signal, float, str]:
     """Combine technical indicators and sentiment into a trading signal."""
     score = 0.0
     reasons: list[str] = []

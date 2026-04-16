@@ -7,7 +7,6 @@ with Slack/webhook notification support for Non-Tech team usage.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import os
 from datetime import datetime, timezone
@@ -15,7 +14,7 @@ from datetime import datetime, timezone
 import httpx
 
 from src.config import DEFAULT_COINS, CHECK_INTERVAL_SECONDS
-from src.data.fetcher import fetch_ohlcv, FetchError
+from src.data.fetcher import fetch_ohlcv
 from src.analysis.signals import generate_signals
 from src.analysis.sentiment import analyze_sentiment, build_price_summary
 from src.backtest.engine import run_backtest
@@ -55,14 +54,16 @@ def format_signal_alert(coin: str, signal_data: dict, backtest_data: dict | None
         lines.append(f"감성분석: {sentiment.get('summary', '')}")
 
     if backtest_data:
-        lines.extend([
-            "",
-            f"📈 백테스트 (90일)",
-            f"총 수익률: {backtest_data.get('total_return_pct', 0):+.2f}%",
-            f"Sharpe: {backtest_data.get('sharpe_ratio', 0):.3f}",
-            f"MDD: -{backtest_data.get('max_drawdown_pct', 0):.2f}%",
-            f"승률: {backtest_data.get('win_rate', 0):.1%}",
-        ])
+        lines.extend(
+            [
+                "",
+                "📈 백테스트 (90일)",
+                f"총 수익률: {backtest_data.get('total_return_pct', 0):+.2f}%",
+                f"Sharpe: {backtest_data.get('sharpe_ratio', 0):.3f}",
+                f"MDD: -{backtest_data.get('max_drawdown_pct', 0):.2f}%",
+                f"승률: {backtest_data.get('win_rate', 0):.1%}",
+            ]
+        )
 
     return "\n".join(lines)
 
@@ -137,15 +138,18 @@ async def check_and_alert(
                     await notify_slack(slack_url, message)
 
                 if n8n_url:
-                    await notify_webhook(n8n_url, {
-                        "type": "crypto_signal",
-                        "coin": coin,
-                        "signal": latest.signal.value,
-                        "confidence": latest.confidence,
-                        "price": latest.price,
-                        "backtest": backtest_data,
-                        "message": message,
-                    })
+                    await notify_webhook(
+                        n8n_url,
+                        {
+                            "type": "crypto_signal",
+                            "coin": coin,
+                            "signal": latest.signal.value,
+                            "confidence": latest.confidence,
+                            "price": latest.price,
+                            "backtest": backtest_data,
+                            "message": message,
+                        },
+                    )
 
             results.append({"coin": coin, "signal": signal_data, "backtest": backtest_data})
 
@@ -173,7 +177,9 @@ async def run_scheduler(
                 logger.error(f"{r['coin']}: {r['error']}")
             else:
                 latest = r["signal"]["latest"][-1] if r["signal"]["latest"] else {}
-                logger.info(f"{r['coin']}: {latest.get('signal', 'N/A')} (conf={latest.get('confidence', 0):.2f})")
+                logger.info(
+                    f"{r['coin']}: {latest.get('signal', 'N/A')} (conf={latest.get('confidence', 0):.2f})"
+                )
 
         await asyncio.sleep(interval)
 
