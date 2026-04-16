@@ -2,7 +2,8 @@ __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
-data/
+# Only ignore top-level data/ (runtime artifacts), not src/data/ source package.
+/data/
 *.db
 .env
 *.egg-info/
