@@ -121,3 +121,11 @@ All parameters are configurable via environment variables or `src/config.py`:
 | `OPENAI_API_KEY` | - | Required for sentiment analysis |
 | `SLACK_WEBHOOK_URL` | - | Slack incoming webhook URL |
 | `N8N_WEBHOOK_URL` | - | n8n webhook trigger URL |
+
+## Cloud + AI Architecture
+
+This repository includes a neutral cloud and AI engineering blueprint that maps the current proof surface to runtime boundaries, data contracts, model-risk controls, deployment posture, and validation hooks.
+
+- [Cloud + AI architecture blueprint](docs/cloud-ai-architecture.md)
+- [Machine-readable architecture manifest](architecture/blueprint.json)
+- Validation command: `python3 scripts/validate_architecture_blueprint.py`
