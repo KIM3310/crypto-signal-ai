@@ -23,6 +23,10 @@ A signal research workbench that makes trading ideas auditable through indicator
 - **Verification:** Run `python -m pytest tests/ -v` and inspect generated signal/backtest outputs.
 - **Commercial read:** Use it as a research automation template, never as a return-guarantee trading product.
 
+## Commercialization Playbook
+
+- [Monetization and GTM playbook](docs/monetization-playbook.md) maps the repository to buyer segments, offer ladder, pricing hypotheses, proof gates, and risk boundaries.
+
 ## Architecture
 
 ```
