@@ -4,6 +4,18 @@ AI-powered crypto trading signal generator with backtesting engine and n8n workf
 
 CoinGecko API에서 실시간 가격 데이터를 수집하고, 기술적 분석(RSI, MACD, Bollinger Bands)과 LLM 기반 감성 분석을 결합하여 매매 시그널을 생성합니다. 생성된 시그널을 과거 데이터에 대해 백테스트하여 Sharpe Ratio, Maximum Drawdown, 승률 등 정량적 성과 지표로 검증합니다. n8n 워크플로우와 Slack 웹훅을 통해 Non-Tech 팀도 즉시 사용 가능한 자동 알림 시스템을 제공합니다.
 
+## Product and Review Surface
+
+A signal research workbench that makes trading ideas auditable through indicators, sentiment hooks, and backtesting.
+
+| Lens | Definition |
+|---|---|
+| Buyer or user | Quant learners, research teams, analytics reviewers, and automation builders. |
+| Commercial route | Package as a research dashboard, paid report workflow, or private strategy-lab template without promising returns. |
+| Review signal | Technical indicators, sentiment hooks, backtesting, workflow automation, and reproducible research outputs. |
+| Safety boundary | Research only; not financial advice, not return guarantees, and live trading needs strict risk controls. |
+| Fast proof | Run the backtest/research scripts and inspect generated metrics, assumptions, and signal reports. |
+
 ## Architecture
 
 ```
