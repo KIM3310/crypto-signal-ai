@@ -16,6 +16,13 @@ A signal research workbench that makes trading ideas auditable through indicator
 | Safety boundary | Research only; not financial advice, not return guarantees, and live trading needs strict risk controls. |
 | Fast proof | Run the backtest/research scripts and inspect generated metrics, assumptions, and signal reports. |
 
+## Reviewer Fast Path
+
+- **First minute:** Start with the backtest metrics, assumptions, and risk disclaimer before reading strategy logic.
+- **Local demo:** Install dev dependencies, then run the API with `uvicorn src.api.routes:app --reload`.
+- **Verification:** Run `python -m pytest tests/ -v` and inspect generated signal/backtest outputs.
+- **Commercial read:** Use it as a research automation template, never as a return-guarantee trading product.
+
 ## Architecture
 
 ```
