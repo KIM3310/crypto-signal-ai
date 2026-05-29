@@ -1,37 +1,33 @@
-# Reviewer Evidence Map - Crypto Signal AI
+# Review Guide - Crypto Signal AI
 
-Updated: 2026-05-29
+Updated: 2026-05-30
 
-This document is the short path for a technical reviewer, engineering leader, product evaluator, or buyer who wants to understand what this repository proves without wandering through every file.
+Use this page as the short path through the repository. It keeps the review grounded in the code, docs, commands, and boundaries that are already present.
 
-## One-Line Proof
+## Summary
 
-**B2C/B2B research automation.** Auditable signal research with indicators, sentiment hooks, and backtesting, without return promises.
-
-## Audience and Commercial Angle
-
-| Lens | Answer |
+| Field | Notes |
 |---|---|
-| Primary reviewer | Quant learners, research communities, analytics teams, and automation builders. |
-| Technical signal | Can the project be explained, verified, bounded, and extended like a real product surface? |
-| Buyer signal | Is there a narrow operational pain, a runnable proof path, and a risk-aware pilot shape? |
-| Stack signal | Python |
+| Lane | B2C/B2B research automation |
+| Core idea | Auditable signal research with indicators, sentiment hooks, and backtesting, without return promises. |
+| Primary reader | Quant learners, research communities, analytics teams, and automation builders. |
+| Stack | Python |
 
-## Seven-Minute Review Route
+## Open First
 
-1. Read the README `Product and Review Surface` and `Reviewer Fast Path` sections.
-2. Open `docs/monetization-playbook.md` to understand the buyer, offer ladder, and GTM hypothesis.
-3. Run or inspect the strongest local quality gate below.
-4. Inspect CI workflow definitions and test fixtures before deeper implementation review.
-5. Check the risk boundaries so claims stay credible and not overextended.
+1. Start with the README fast path and architecture section.
+2. Open `docs/monetization-playbook.md` only when reviewing the product or service angle.
+3. Check the commands below before making claims about quality.
+4. Skim the CI workflows and fixture data before deeper implementation review.
+5. Read the boundaries section before presenting the project externally.
 
-## Verification Commands
+## Checks
 
 | Purpose | Command |
 |---|---|
 | Test suite | `python -m pytest` |
 
-## CI and Automation Surface
+## CI
 
 - .github/workflows/architecture-blueprint.yml
 - .github/workflows/ci.yml
@@ -40,33 +36,29 @@ This document is the short path for a technical reviewer, engineering leader, pr
 - .github/workflows/repository-surface.yml
 - .github/workflows/secret-scan.yml
 
-## Evidence Inventory
+## Evidence
 
 - pytest/ruff-style local verification path
 - Tests pass
 - Backtest assumptions visible
 - Financial-advice boundary is explicit
 
-## Commercialization Snapshot
+## Commercial Notes
 
-| Offer | Pricing hypothesis |
+| Possible offer | Working price assumption |
 |---|---|
 | Paid research dashboard | $9-$29/month research access |
 | Private strategy-lab template | $1k-$5k setup |
 | Automation/report workflow setup | $500-$3k/month private reporting |
 
-## Risk Boundaries
+## Boundaries
 
 - No investment advice
 - No guaranteed returns
 - Live trading requires risk controls
 
-## Metrics That Matter
+## Useful Metrics
 
 - Report retention
 - Backtest reproducibility
 - Automation adoption
-
-## Review Verdict
-
-This repository should be evaluated as part of the broader KIM3310 portfolio: it is strongest when the reviewer sees the link between a concrete implementation, a documented verification path, and an externally credible operating story.
