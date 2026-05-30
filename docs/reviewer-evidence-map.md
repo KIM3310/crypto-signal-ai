@@ -2,60 +2,47 @@
 
 Updated: 2026-05-30
 
-Use this page as the short path through the repository. It keeps the review grounded in the code, docs, commands, and boundaries that are already present.
+This repository is now curated as supporting material. Review it only after the flagship enterprise AI, operations, security, data, and runtime reliability projects have established the main story.
 
 ## Summary
 
 | Field | Notes |
 |---|---|
+| Repository | `crypto-signal-ai` |
+| Status | Archived supporting repository |
 | Lane | B2C/B2B research automation |
-| Core idea | Auditable signal research with indicators, sentiment hooks, and backtesting, without return promises. |
 | Primary reader | Quant learners, research communities, analytics teams, and automation builders. |
-| Stack | Python |
+| Why it moved back | Finance/crypto research can create avoidable trust risk in a technical or enterprise-buyer review. |
+| Current successor | Nexus-Hive, regulated-case-workbench, and lakehouse-contract-lab |
 
 ## Open First
 
-1. Start with the README fast path and architecture section.
-2. Open `docs/monetization-playbook.md` only when reviewing the product or service angle.
-3. Check the commands below before making claims about quality.
-4. Skim the CI workflows and fixture data before deeper implementation review.
-5. Read the boundaries section before presenting the project externally.
-
-## Checks
-
-| Purpose | Command |
-|---|---|
-| Test suite | `python -m pytest` |
-
-## CI
-
-- .github/workflows/architecture-blueprint.yml
-- .github/workflows/ci.yml
-- .github/workflows/dependency-review.yml
-- .github/workflows/repository-health.yml
-- .github/workflows/repository-surface.yml
-- .github/workflows/secret-scan.yml
+1. Start with the successor repositories named above.
+2. Use this repository only for optional domain breadth or historical product exploration.
+3. Check `docs/portfolio-fit.md` before presenting it externally.
+4. Keep the archived/supporting status visible in any resume, portfolio, or buyer conversation.
 
 ## Evidence
 
-- pytest/ruff-style local verification path
 - Tests pass
 - Backtest assumptions visible
 - Financial-advice boundary is explicit
 
 ## Commercial Notes
 
-| Possible offer | Working price assumption |
-|---|---|
-| Paid research dashboard | $9-$29/month research access |
-| Private strategy-lab template | $1k-$5k setup |
-| Automation/report workflow setup | $500-$3k/month private reporting |
+| Possible offer | Working price assumption | Scope |
+|---|---|---|
+| Paid research dashboard | $9-$29/month research access | Scoped after review. |
+| Private strategy-lab template | $1k-$5k setup | Scoped after review. |
+| Automation/report workflow setup | $500-$3k/month private reporting | Scoped after review. |
 
 ## Boundaries
 
 - No investment advice
 - No guaranteed returns
 - Live trading requires risk controls
+- Finance/crypto research can create avoidable trust risk in a technical or enterprise-buyer review.
+- Do not present this as a current flagship or maintained product surface.
 
 ## Useful Metrics
 

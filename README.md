@@ -1,5 +1,10 @@
 # Crypto Signal AI
 
+> **Curated supporting repo**
+> This repository is kept as optional proof, but it no longer leads the portfolio.
+> Current front door: **Nexus-Hive, regulated-case-workbench, and lakehouse-contract-lab**.
+> Reason: Finance/crypto research can create avoidable trust risk in a technical or enterprise-buyer review.
+
 AI-powered crypto trading signal generator with backtesting engine and n8n workflow automation.
 
 CoinGecko API에서 실시간 가격 데이터를 수집하고, 기술적 분석(RSI, MACD, Bollinger Bands)과 LLM 기반 감성 분석을 결합하여 매매 시그널을 생성합니다. 생성된 시그널을 과거 데이터에 대해 백테스트하여 Sharpe Ratio, Maximum Drawdown, 승률 등 정량적 성과 지표로 검증합니다. n8n 워크플로우와 Slack 웹훅을 통해 Non-Tech 팀도 즉시 사용 가능한 자동 알림 시스템을 제공합니다.
@@ -33,6 +38,7 @@ A signal research workbench that makes trading ideas auditable through indicator
 - [Quality notes](docs/quality-gate.md) lists the local checks, CI surface, and release expectations for this repository.
 - [Revenue growth model](docs/revenue-growth-model.md) maps the project to an ethical revenue path, activation loop, pricing logic, and growth experiments.
 - [Enterprise readiness notes](docs/enterprise-readiness.md) outlines security, data, operations, integration, and handoff expectations.
+- [Portfolio fit](docs/portfolio-fit.md) explains why this repository is archived/supporting and where the current portfolio front door lives.
 
 ## Architecture
 
